@@ -24,7 +24,7 @@ class DQN(nn.Module):
         self.fc5 = nn.Linear(512, num_actions)
 
     def getSummary(self):
-        summary(self, input_size=(1, ARGS.imgDIM, ARGS.imgDIM))
+        summary(self, input_size=(1*ARGS.framelen, ARGS.imgDIM, ARGS.imgDIM))
 
     def forward(self, x):
         x = F.relu(self.conv1(x))

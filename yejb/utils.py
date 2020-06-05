@@ -1,5 +1,6 @@
 import world
 import random
+import torch
 import numpy as np
 import torch.optim as optim
 from world import ARGS
@@ -19,6 +20,7 @@ def getOptimizer(optimizer=None):
             constructor = optimizer, 
             kwargs      = dict(lr = ARGS.lr, alpha=ARGS.alpha, eps=ARGS.eps)
         )
+    return wrapped_optimizer
 # ------------------------------------------------
 def init_model(env, 
                model : DQN):
@@ -29,8 +31,7 @@ def init_model(env,
     # we assert that all the obs are gray images
     num_actions = env.action_space.n
     # obtain Discrete actions of an env
-    return model(in_channels=channel,
-                 num_actions=num_actions)
+    return model(in_channels=channel, num_actions=num_actions)
 # ------------------------------------------------
 def set_global_seeds(i):
     try:
@@ -44,6 +45,18 @@ def set_global_seeds(i):
 # ------------------------------------------------
 def linear_interpolation(l, r, alpha):
     return l + alpha * (r - l)
+
+def TENSOR(*tensors):
+    results = []
+    for tensor in tensors:
+        results.append(torch.from_numpy(tensor))
+    return results
+
+def TO(*tensors, **kwargs):
+    results = []
+    for tensor in tensors:
+        results.append(tensor.to(world.DEVICE))
+    return results
 # ------------------------------------------------
 class Schedule(object):
     def value(self, t):

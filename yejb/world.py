@@ -3,6 +3,7 @@
     and make the hyperparameters global
 '''
 import argparse
+import torch
 from pprint import pprint
 
 def parse_args():
@@ -19,10 +20,13 @@ def parse_args():
     parser.add_argument('--eps', type=float,default=0.01)
     parser.add_argument('--imgDIM', type=int,default=84)
     parser.add_argument('--seed', type=int,default=2020)
+    parser.add_argument('--timesteps', type=int,default=100000000)
     return parser.parse_args()
 # ------------------------------------------------
 args = parse_args()
 ARGS = args
+GPU = torch.cuda.is_available()
+DEVICE = torch.device('cuda' if GPU else "cpu")
 # ------------------------------------------------
 # The above is annoation style
 def Print(where, strs):
@@ -31,9 +35,6 @@ def Print(where, strs):
     print("% ---------------------------")
 # ------------------------------------------------
 Print('world', ARGS.__dict__)
-
-
-
 # ------------------------------------------------
 function_annoation_style = \
 r"""@parameters

@@ -11,7 +11,7 @@ class PreProcess(Wrapper):
         assert isinstance(env, gym.Env)
         super(PreProcess, self).__init__(env)
         # self.env = env
-        self.step = 0
+        self.steps = 0
     
     @staticmethod
     def resize(obs):
@@ -21,16 +21,16 @@ class PreProcess(Wrapper):
         obs = obs[..., np.newaxis]
         return obs
     
-    def _reset(self):
+    def reset(self):
         obs = self.env.reset()
         obs = PreProcess.resize(obs)
         return obs
     
-    def _step(self, action):
-        self.step += 1
-        results = self.env.step(action)    
-        results[0] = PreProcess.resize(results[0])
-        return results
+    def step(self, action):
+        self.steps += 1
+        obs, reward, done, info = self.env.step(action)    
+        obs = PreProcess.resize(obs)
+        return obs, reward, done, info
 
     def getTotalStep(self):
-        return self.step
+        return self.steps

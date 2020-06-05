@@ -20,11 +20,14 @@ Print('ENV observation', f"Image: {ARGS.imgDIM} X {ARGS.imgDIM} X {1}") # we ass
 Optimizer = utils.getOptimizer()
 schedule = utils.LinearSchedule(1000000, 0.1)
 
-Gama_buffer = ReplayBuffer(ARGS.buffersize, ARGS.framelen)
+Game_buffer = ReplayBuffer(ARGS.buffersize, ARGS.framelen)
 
 Q = utils.init_model(env, DQN)
 Q_target = utils.init_model(env, DQN)
 # ------------------------------------------------
 train_DQN(env, 
           Q=Q, 
-          Q_target=Q_target)
+          Q_target=Q_target,
+          optimizer=Optimizer,
+          replay_buffer=Game_buffer,
+          exploration=schedule)
