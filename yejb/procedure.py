@@ -48,7 +48,7 @@ def train_DQN(env          : gym.Env,
     for t in bar:
         last_idx = replay_buffer.store_frame(last_obs)
         recent_observations = replay_buffer.encode_recent_observation()
-        if t > ARGS.startepoch:
+        if t < ARGS.startepoch:
             value = select_epsilon_greedy_action(Q, 
                                                  recent_observations, 
                                                  exploration, 
@@ -64,7 +64,7 @@ def train_DQN(env          : gym.Env,
         if done:
             obs = env.reset()
         last_obs = obs
-        bar.set_description(f"{obs.shape}")
+        bar.set_description(f"{obs.shape} {obs.dtype}")
         
         if (t > ARGS.startepoch and 
             t % ARGS.dqn_updatefreq == 0 and 
@@ -128,7 +128,8 @@ def select_epsilon_greedy_action(model      : DQN,
     sample = random.random()
     eps_threshold = exploration.value(t)
     if sample > eps_threshold:
-        obs = torch.from_numpy(obs).unsqueeze(0)
+        obs = torch.from_numpy(obs).unsqueeze(0).float()
+        print(obs.dtype)
         with torch.no_grad():
             values = model(obs)
         return values.data.max(1)[1].cpu().unsqueeze(dim=1)

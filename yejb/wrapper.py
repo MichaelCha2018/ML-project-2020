@@ -15,11 +15,10 @@ class PreProcess(Wrapper):
     
     @staticmethod
     def resize(obs):
-        obs = cv.cvtColor(obs, cv.COLOR_BGR2GRAY)
-        # obs = cv.resize(obs, dsize=(obs.shape[1]//2, obs.shape[0]//2))
+        obs = cv.cvtColor(obs, cv.COLOR_BGR2GRAY).astype('float32')
         obs = cv.resize(obs, dsize=(ARGS.imgDIM, ARGS.imgDIM)) / 255.0
         obs = obs[..., np.newaxis]
-        return obs
+        return obs.astype('float32')
     
     def reset(self):
         obs = self.env.reset()

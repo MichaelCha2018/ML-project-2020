@@ -49,7 +49,7 @@ def linear_interpolation(l, r, alpha):
 def TENSOR(*tensors):
     results = []
     for tensor in tensors:
-        results.append(torch.from_numpy(tensor))
+        results.append(torch.from_numpy(tensor).float())
     return results
 
 def TO(*tensors, **kwargs):
