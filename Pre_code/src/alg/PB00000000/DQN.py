@@ -7,7 +7,7 @@ import numpy as np
 from collections import deque
 import random
 
-MEMORY_CAPACITY = 10000000
+MEMORY_CAPACITY = 1000000
 MEMORY_THRESHOLD = 10000
 EPSILON = 0.9
 BATCH_SIZE = 32

@@ -28,6 +28,8 @@ def update_state(state, next_state):
 
 def evaluate(env,policy,num_evaluate_episodes,is_render):
     for j in range(num_evaluate_episodes):
+        is_render = j % 10 == 0
+        print(j)
         obs = env.reset()
         obs = env.reset()
         obs = preprocess(obs)

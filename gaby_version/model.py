@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.autograd as autograd
 from collections import deque
 import random
-from utils import FrameStack, WarpFrame, TorchFrame
+from utils import FrameStack, WarpFrame, TorchFrame, Uint2Float
 
 
 
@@ -22,7 +22,8 @@ class DQNNet(nn.Module):
 
     def forward(self, obs):
         #obs = TorchFrame([obs]).to(device)
-        obs = TorchFrame([obs]).to(device)
+        obs = TorchFrame(obs).to(device)
+        obs = Uint2Float(obs)
         obs = obs.view(-1, 4, 84, 84)
         obs = self.conv(obs)
         obs = obs.view(obs.shape[0], obs.shape[1] * obs.shape[2] * obs.shape[3])
@@ -50,10 +51,11 @@ class DQNAgent():
                  lr=0.00025,
                  alpha=0.95,
                  gamma=0.99,
-                 rep_buf_size=500000,
-                 rep_buf_ini=50000,
+                 rep_buf_size=125000,
+                 rep_buf_ini=12500,
                  batch_size=64,
-                 target_update=5000):
+                 target_update=5000,
+                 skip_frame = 4):
         self.env = env
         self.n_actions = env.action_space.n
         self.gamma = gamma
@@ -67,7 +69,8 @@ class DQNAgent():
         self.target_model.load_state_dict(self.policy_model.state_dict())
         self.optimizer = torch.optim.RMSprop(self.policy_model.parameters(), lr=lr, alpha=alpha)
         self.replay_buffer = ReplayBuffer(rep_buf_size)
-        #self.init_replay()
+        self.skip_frame = skip_frame
+        self.init_replay()
 
     def init_replay(self):
         while len(self.replay_buffer) < self.rep_buf_ini:
@@ -108,11 +111,11 @@ class DQNAgent():
             return loss.mean()
         return loss.sum()
 
-    def learn(self):
+    def learn(self, num_frames):
         """
         Update the policy
         """
-        if len(self.replay_buffer) > self.batch_size:
+        if len(self.replay_buffer) > self.batch_size and num_frames % self.skip_frame == 0:
             observations, actions, rewards, next_observations, dones = self.replay_buffer.sample(self.batch_size)
 
             actions = torch.from_numpy(np.array(actions).astype(int)).float().to(device)
@@ -137,4 +140,7 @@ class DQNAgent():
             loss.backward()
 
             self.optimizer.step()
+
+        if num_frames % self.target_update == 0:
+            self.target_model.load_state_dict(self.policy_model.state_dict())
 

@@ -10,7 +10,10 @@ def WarpFrame(obs):
     frame = cv2.cvtColor(obs, cv2.COLOR_RGB2GRAY)
     frame = cv2.resize(frame, (84, 84), interpolation=cv2.INTER_AREA)
     #return frame[:, :, None]
-    return frame / 255.0
+    return frame
+
+def Uint2Float(obs):
+    return obs / 255.0
 
 def FrameStack(new_obs, obs):
     """
