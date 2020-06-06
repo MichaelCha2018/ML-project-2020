@@ -132,7 +132,7 @@ def select_epsilon_greedy_action(model      : DQN,
     sample = random.random()
     eps_threshold = exploration.value(t)
     if sample > eps_threshold:
-        obs = torch.from_numpy(obs).unsqueeze(0).float()
+        obs = torch.from_numpy(obs).unsqueeze(0).float().to(world.DEVICE)
         with torch.no_grad():
             values = model(obs)
         return values.data.max(1)[1].cpu().unsqueeze(dim=1)

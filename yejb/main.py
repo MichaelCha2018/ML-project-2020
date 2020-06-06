@@ -22,8 +22,8 @@ schedule = utils.LinearSchedule(1000000, 0.1)
 
 Game_buffer = ReplayBuffer(ARGS.buffersize, ARGS.framelen)
 
-Q = utils.init_model(env, DQN).train()
-Q_target = utils.init_model(env, DQN).eval()
+Q = utils.init_model(env, DQN).train().to(world.DEVICE)
+Q_target = utils.init_model(env, DQN).eval().to(world.DEVICE)
 # ------------------------------------------------
 train_DQN(env, 
           Q=Q, 
