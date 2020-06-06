@@ -153,6 +153,7 @@ def dqn_learing(
     summary(target_Q, input_size = (input_arg, last_obs.shape[0], last_obs.shape[1]))
     LOG_EVERY_N_STEPS = 10000
 
+    rewards = 0.
     out_count = 0
     for t in count():
         ### Check stopping criterion
@@ -189,6 +190,7 @@ def dqn_learing(
             action = random.randrange(num_actions)
         # Advance one step
         obs, reward, done, _ = env.step(action)
+        rewards += reward
         # clip rewards between -1 and 1
         reward = max(-1.0, min(reward, 1.0))
         # Store other info in replay memory
@@ -196,6 +198,8 @@ def dqn_learing(
         # Resets the environment when reaching an episode boundary.
         if done:
             obs = env.reset()
+            print(len(episode_rewards),episode_rewards, rewards)
+            rewards = 0.
         # print(obs.shape)
         # cv.imshow('now_color', obs)
         # cv.waitKey(1)

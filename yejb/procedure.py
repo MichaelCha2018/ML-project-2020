@@ -3,18 +3,20 @@ import torch
 import random
 import gym
 import numpy as np
+from time import time
 from tqdm import tqdm
 from world import ARGS
 from utils import Schedule, TO, TENSOR
 from torch import Tensor
 from torch.nn import Module
 from models import DQN
+from wrapper import WrapIt
 from Buffer import ReplayBuffer
 from collections import namedtuple
 from torch.optim.optimizer import Optimizer
 
 
-def train_DQN(env          : gym.Env, 
+def train_DQN(env          : WrapIt, 
               Q            : DQN, 
               Q_target     : DQN, 
               optimizer    : namedtuple, 
@@ -39,7 +41,7 @@ def train_DQN(env          : gym.Env,
     mean_episode_reward = -float('nan')
     best_mean_episode_reward = -float('inf')
     LOG_EVERY_N_STEPS = 10000
-    last_obs = env.reset()
+    last_obs = env.reset(passit=True)
     
     # Q.getSummary()
     
@@ -48,7 +50,7 @@ def train_DQN(env          : gym.Env,
     for t in bar:
         last_idx = replay_buffer.store_frame(last_obs)
         recent_observations = replay_buffer.encode_recent_observation()
-        if t < ARGS.startepoch:
+        if t > ARGS.startepoch:
             value = select_epsilon_greedy_action(Q, 
                                                  recent_observations, 
                                                  exploration, 
@@ -56,19 +58,20 @@ def train_DQN(env          : gym.Env,
                                                  num_actions)
             action = value[0,0]
         else:
-            
             action = random.randrange(num_actions)
         obs, reward, done, _ = env.step(action)
         reward = max(-1.0, min(reward, 1.0))
         replay_buffer.store_effect(last_idx, action, reward, done)
+        
         if done:
-            obs = env.reset()
+            obs = env.reset()  
         last_obs = obs
-        bar.set_description(f"{obs.shape} {obs.dtype}")
+        # bar.set_description(f"{obs.shape} {obs.dtype}")
         
         if (t > ARGS.startepoch and 
-            t % ARGS.dqn_updatefreq == 0 and 
+            t % ARGS.dqn_freq == 0 and 
             replay_buffer.can_sample(ARGS.batchsize)):
+            bar.set_description("backward")
             (obs_batch, 
              act_batch, 
              rew_batch, 
@@ -83,7 +86,7 @@ def train_DQN(env          : gym.Env,
              act_batch) = TO(obs_batch, act_batch)
             
             values = Q(obs_batch)
-            current_Q_values = values.gather(1, act_batch.unsqueeze(1)).squeeze()
+            current_Q_values = values.gather(1, act_batch.unsqueeze(1).long()).squeeze()
             # Compute next Q value based on which action gives max Q values
             # Detach variable from the current graph since we don't want gradients for next Q to propagated
             next_max_q = Q_target(next_obs_batch).detach().max(1)[0]
@@ -107,6 +110,7 @@ def train_DQN(env          : gym.Env,
             num_param_updates += 1
             
             if num_param_updates % ARGS.dqn_updatefreq == 0:
+                bar.set_description("update")
                 Q_target.load_state_dict(Q.state_dict())
             
             
@@ -129,7 +133,6 @@ def select_epsilon_greedy_action(model      : DQN,
     eps_threshold = exploration.value(t)
     if sample > eps_threshold:
         obs = torch.from_numpy(obs).unsqueeze(0).float()
-        print(obs.dtype)
         with torch.no_grad():
             values = model(obs)
         return values.data.max(1)[1].cpu().unsqueeze(dim=1)
