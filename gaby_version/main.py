@@ -18,7 +18,7 @@ score = 0
 env = gym.make('Riverraid-v0')
 agent = DQNAgent(env)
 is_render = False
-for i_episode in range(21):
+for i_episode in range(4000):
     observation = env.reset()
     observation = WarpFrame(observation)
     observation = np.stack([observation] * 4, axis=0)

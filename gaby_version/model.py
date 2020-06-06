@@ -50,8 +50,8 @@ class DQNAgent():
                  lr=0.00025,
                  alpha=0.95,
                  gamma=0.99,
-                 rep_buf_size=50000,
-                 rep_buf_ini=5000,
+                 rep_buf_size=500000,
+                 rep_buf_ini=50000,
                  batch_size=64,
                  target_update=5000):
         self.env = env

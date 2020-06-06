@@ -83,7 +83,10 @@ def train_DQN(env          : WrapIt,
              next_obs_batch, 
              not_done_mask) = TENSOR(obs_batch, act_batch, rew_batch, next_obs_batch, 1-done_mask)
             (obs_batch, 
-             act_batch) = TO(obs_batch, act_batch)
+             act_batch, 
+             rew_batch, 
+             next_obs_batch, 
+             not_done_mask) = TO(obs_batch, act_batch, rew_batch, next_obs_batch, not_done_mask)
             
             values = Q(obs_batch)
             current_Q_values = values.gather(1, act_batch.unsqueeze(1).long()).squeeze()
