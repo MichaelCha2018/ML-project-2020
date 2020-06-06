@@ -40,8 +40,6 @@ class WrapIt(Wrapper):
             self._total_rewards = 0.
             if self.log:
                 self.writer.add_scalar("Rewards", self._episode_rewards[-1], self._episodes)
-                # with open(self.prename+'.txt', 'a') as f:
-                #     f.write(f"#{self._episodes} \t:: rewards={self._episode_rewards[-1]} \t: best={np.max(self._episode_rewards)} \t: mean={np.mean(self._episode_rewards):.3f} \n")
         # ------------------------------------------------------
         obs = self.env.reset()
         obs = WrapIt.resize(obs)
