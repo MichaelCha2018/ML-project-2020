@@ -10,7 +10,7 @@ import time
 EPSILON_START = 1.0
 EPSILON_FINAL = 0.1
 EPSILON_DECAY = 250000
-EPISODES = 5000
+EPISODES = 50
 
 epsilon_by_frame = lambda step_idx: EPSILON_FINAL + (EPSILON_START - EPSILON_FINAL) * math.exp(-1. * step_idx / EPSILON_DECAY)
 
@@ -50,7 +50,6 @@ for i_episode in range(EPISODES):
     t = time.time() - t
     episode_score.append(score)
     print(f"Episode: {i_episode} \t score: {score} \t time used: {t}s \t actions taken: {num_frames} \t epsilon: {epsilon}")
-    print(f"Get informations: {t0}s \t Foward: {t1}s \t Loss and back: {t2}s ")
 
 plt.plot(episodes, episode_score)
 plt.show()
