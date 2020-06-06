@@ -10,7 +10,7 @@ import time
 EPSILON_START = 1.0
 EPSILON_FINAL = 0.1
 EPSILON_DECAY = 250000
-EPISODES = 200
+EPISODES = 5000
 
 epsilon_by_frame = lambda step_idx: EPSILON_FINAL + (EPSILON_START - EPSILON_FINAL) * math.exp(-1. * step_idx / EPSILON_DECAY)
 
@@ -27,7 +27,7 @@ for i_episode in range(EPISODES):
     observation = np.stack([observation] * 4, axis=0)
     done = False
     is_render = i_episode % 10 == 0
-    t0 = time.time()
+    t = time.time()
     while not done:
         if is_render:
             env.render()
@@ -47,9 +47,11 @@ for i_episode in range(EPISODES):
         agent.learn(num_frames)
         num_frames += 1
         score += reward
-    t = time.time() - t0
+    t = time.time() - t
     episode_score.append(score)
-    print(f"Episode: {i_episode} \t score: {score} \t time used: {t} \t actions taken: {num_frames} \t epsilon: {epsilon}")
+    print(f"Episode: {i_episode} \t score: {score} \t time used: {t}s \t actions taken: {num_frames} \t epsilon: {epsilon}")
+    print(f"Get informations: {t0}s \t Foward: {t1}s \t Loss and back: {t2}s ")
 
 plt.plot(episodes, episode_score)
+plt.show()
 env.close()
