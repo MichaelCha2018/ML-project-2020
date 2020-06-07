@@ -7,8 +7,6 @@ import random
 from utils import FrameStack, WarpFrame, Uint2Float
 import time
 
-
-
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 
@@ -118,6 +116,7 @@ class DQNAgent():
         """
         Update the policy
         """
+        loss = 0
         if len(self.replay_buffer) > self.batch_size and num_frames % self.skip_frame == 0:
             observations, actions, rewards, next_observations, dones = self.replay_buffer.sample(self.batch_size)
             observations = torch.from_numpy(np.array(observations)).float().to(device)
@@ -147,6 +146,10 @@ class DQNAgent():
 
             self.optimizer.step()
 
+            loss = loss.item()
+
         if num_frames % self.target_update == 0:
             self.target_model.load_state_dict(self.policy_model.state_dict())
+
+        return loss
 
