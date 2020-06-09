@@ -4,12 +4,12 @@ import torch.nn as nn
 import torch.autograd as autograd
 from collections import deque
 import random
-from utils import FrameStack, WarpFrame, TorchFrame, Uint2Float
-
-
+from utils import FrameStack, WarpFrame, Uint2Float
+import time
 
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
+
 
 class DQNNet(nn.Module):
     def __init__(self, n_actions):
@@ -21,8 +21,7 @@ class DQNNet(nn.Module):
         self.fc = nn.Sequential(nn.Linear(7 * 7 * 64, 512), nn.ReLU(), nn.Linear(512, n_actions))
 
     def forward(self, obs):
-        #obs = TorchFrame([obs]).to(device)
-        obs = TorchFrame(obs).to(device)
+        #obs = TorchFrame(obs).to(device)
         obs = Uint2Float(obs)
         obs = obs.view(-1, 4, 84, 84)
         obs = self.conv(obs)
@@ -39,6 +38,7 @@ class ReplayBuffer(object):
         self.buffer.append([state, action, reward, next_state, done])
 
     def sample(self, batch_size):
+        #state, action, reward, next_state, done = map(list, zip(*random.sample(self.buffer, batch_size)))
         state, action, reward, next_state, done = zip(*random.sample(self.buffer, batch_size))
         return state, action, reward, next_state, done
 
@@ -53,7 +53,7 @@ class DQNAgent():
                  gamma=0.99,
                  rep_buf_size=125000,
                  rep_buf_ini=12500,
-                 batch_size=64,
+                 batch_size=32,
                  target_update=5000,
                  skip_frame = 4):
         self.env = env
@@ -93,6 +93,7 @@ class DQNAgent():
 
     def choose_action(self, obs, epsilon):
         if random.random() > epsilon:
+            obs = torch.from_numpy(np.array(obs)).float().to(device)
             q_value = self.policy_model(obs)
             action = q_value.argmax(1).data.cpu().numpy().astype(int)[0]
         else:
@@ -115,8 +116,10 @@ class DQNAgent():
         """
         Update the policy
         """
+        loss = 0
         if len(self.replay_buffer) > self.batch_size and num_frames % self.skip_frame == 0:
             observations, actions, rewards, next_observations, dones = self.replay_buffer.sample(self.batch_size)
+            observations = torch.from_numpy(np.array(observations)).float().to(device)
 
             actions = torch.from_numpy(np.array(actions).astype(int)).float().to(device)
             actions = actions.view(actions.shape[0], 1)
@@ -126,6 +129,8 @@ class DQNAgent():
 
             dones = torch.from_numpy(np.array(dones).astype(int)).float().to(device)
             dones = dones.view(dones.shape[0], 1)
+
+            next_observations = torch.from_numpy(np.array(next_observations)).float().to(device)
 
             q_values = self.policy_model(observations)
             next_q_values = self.target_model(next_observations)
@@ -141,6 +146,10 @@ class DQNAgent():
 
             self.optimizer.step()
 
+            loss = loss.item()
+
         if num_frames % self.target_update == 0:
             self.target_model.load_state_dict(self.policy_model.state_dict())
+
+        return loss
 

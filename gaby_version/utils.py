@@ -25,6 +25,3 @@ def FrameStack(new_obs, obs):
     obs[0 : 3, :, :] = obs[1 :, :, :]
     obs[3, :, :] = new_obs
     return obs
-
-def TorchFrame(obs):
-    return torch.FloatTensor(obs)
