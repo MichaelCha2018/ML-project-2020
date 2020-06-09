@@ -10,7 +10,7 @@ import time
 EPSILON_START = 1.0
 EPSILON_FINAL = 0.1
 EPSILON_DECAY = 250000
-EPISODES = 200
+EPISODES = 5000
 
 epsilon_by_frame = lambda step_idx: EPSILON_FINAL + (EPSILON_START - EPSILON_FINAL) * math.exp(-1. * step_idx / EPSILON_DECAY)
 
