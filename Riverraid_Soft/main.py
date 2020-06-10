@@ -9,6 +9,7 @@ import torch.autograd as autograd
 import gym
 from gym import wrappers
 import atari_wrappers
+from time import time
 
 logger = logging.getLogger('dqn_spaceinvaders')
 logger.setLevel(logging.INFO)
@@ -136,7 +137,7 @@ while episode < max_episodes:
     done = False
     #import time
     #start=time.time()
-    
+    start = time()
     while not done:
 
         with torch.no_grad():
@@ -193,13 +194,13 @@ while episode < max_episodes:
             
     episode += 1
     episode_score.append(score)
-    print('\rEpisode {}\tAverage Score: {:.2f}'.format(episode, np.mean(episode_score)), end="")
+    print('\rEpisode {}\tTime: {:.2f}\tAverage Score: {:.2f}'.format(episode, time()-start,np.mean(episode_score)), end="")
     if info['ale.lives'] == 0:
         score = 0
     if episode % 100 == 0:
         mean_score = np.mean(episode_score)
         mean_episode_score.append(mean_score)
         episode_score = []
-        print("------------------------")
+        print("\n------------------------")
         logger.info('Frame: ' + str(num_frames) + ' / Episode: ' + str(episode) + ' / Average Score (over last 20 episodes): ' + str(int(mean_score)))
         torch.save(policy_model.state_dict(), './data/dqn_riverraid_model_state_dict.pt')
